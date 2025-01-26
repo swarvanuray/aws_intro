@@ -22,16 +22,13 @@ resource "aws_instance" "web" {
   count         = 4
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.small"
-  key_name = aws_key_pair.deployer.key_name 
+  key_name      = aws_key_pair.deployer.key_name
   subnet_id     = aws_subnet.public.id
   tags = {
     Name = "HelloWorld-${count.index}"
     Team = "Beta"
   }
 }
-
-
-
 
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
