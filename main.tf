@@ -71,7 +71,7 @@ resource "aws_route_table" "public_custom_route_table" {
 
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr_block
+  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 4, 0)
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
 
