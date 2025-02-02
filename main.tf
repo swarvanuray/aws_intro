@@ -30,14 +30,25 @@ resource "aws_instance" "web" {
   }
 }
 
+
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+  
+  key_name   = "${var.ssh_key_name}-${var.env}"
+  public_key = tls_private_key.deployer.public_key_openssh
+   provisioner "local-exec" {
+    command = "mkdir -p ~/.ssh && echo '${tls_private_key.deployer.private_key_openssh}' > ~/.ssh/${self.key_name}.pem && chmod 400 ~/.ssh/${self.key_name}.pem"
+  interpreter = ["bash", "-c"]
+
+   }
+   
 }
 data "aws_availability_zones" "available" {
   state = "available"
 }
-
+resource "tls_private_key" "deployer" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr_block
   instance_tenancy     = "default"
@@ -84,3 +95,4 @@ resource "aws_route_table_association" "public_crt_public_subnet" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public_custom_route_table.id
 }
+
