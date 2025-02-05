@@ -36,12 +36,17 @@ resource "aws_key_pair" "deployer" {
   key_name   = "${var.ssh_key_name}-${var.env}"
   public_key = tls_private_key.deployer.public_key_openssh
    provisioner "local-exec" {
-    command = "mkdir -p ~/.ssh && echo '${tls_private_key.deployer.private_key_openssh}' > ~/.ssh/${self.key_name}.pem && chmod 400 ~/.ssh/${self.key_name}.pem"
-  interpreter = ["bash", "-c"]
+    command = "echo '${tls_private_key.deployer.private_key_openssh}' > ~/.ssh/${var.ssh_key_name}.pem; chmod 400 ~/.ssh/${self.key_name}.pem"
+
 
    }
-   
+   provisioner "local-exec" {
+		when    = destroy
+		command = "rm -rf ~/.ssh/${self.key_name}.pem"
+	}
 }
+   
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
